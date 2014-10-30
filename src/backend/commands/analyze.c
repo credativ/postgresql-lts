@@ -104,7 +104,8 @@ static bool std_typanalyze(VacAttrStats *stats);
  *	analyze_rel() -- analyze one relation
  */
 void
-analyze_rel(Oid relid, VacuumStmt *vacstmt, BufferAccessStrategy bstrategy)
+analyze_rel(Oid relid, VacuumStmt *vacstmt,
+			bool in_outer_xact, BufferAccessStrategy bstrategy)
 {
 	Relation	onerel;
 	int			attr_cnt,
@@ -444,7 +445,11 @@ analyze_rel(Oid relid, VacuumStmt *vacstmt, BufferAccessStrategy bstrategy)
 	 */
 	vac_update_relstats(onerel,
 						RelationGetNumberOfBlocks(onerel),
-						totalrows, hasindex, InvalidTransactionId);
+						totalrows, 
+						hasindex, 
+						InvalidTransactionId
+						in_outer_xact);
+
 	/* report results to the stats collector, too */
 	pgstat_report_analyze(onerel, totalrows, totaldeadrows);
 
@@ -463,7 +468,10 @@ analyze_rel(Oid relid, VacuumStmt *vacstmt, BufferAccessStrategy bstrategy)
 			totalindexrows = ceil(thisdata->tupleFract * totalrows);
 			vac_update_relstats(Irel[ind],
 								RelationGetNumberOfBlocks(Irel[ind]),
-								totalindexrows, false, InvalidTransactionId);
+								totalindexrows,
+								false,
+								InvalidTransactionId,
+								in_outer_xact);
 		}
 	}
 
