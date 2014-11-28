@@ -447,7 +447,7 @@ analyze_rel(Oid relid, VacuumStmt *vacstmt,
 						RelationGetNumberOfBlocks(onerel),
 						totalrows, 
 						hasindex, 
-						InvalidTransactionId
+						InvalidTransactionId,
 						in_outer_xact);
 
 	/* report results to the stats collector, too */

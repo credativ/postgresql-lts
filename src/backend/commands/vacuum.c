@@ -1428,7 +1428,7 @@ full_vacuum_rel(Relation onerel, VacuumStmt *vacstmt)
 	/* update statistics in pg_class */
 	vac_update_relstats(onerel,
 						vacrelstats->rel_pages, vacrelstats->rel_tuples,
-						vacrelstats->hasindex, FreezeLimit);
+						vacrelstats->hasindex, FreezeLimit, false);
 
 	/* report results to the stats collector, too */
 	pgstat_report_vacuum(RelationGetRelid(onerel), onerel->rd_rel->relisshared,
@@ -3542,7 +3542,7 @@ scan_index(Relation indrel, double num_tuples)
 	if (!stats->estimated_count)
 		vac_update_relstats(indrel,
 							stats->num_pages, stats->num_index_tuples,
-							false, InvalidTransactionId);
+							false, InvalidTransactionId, false);
 
 	ereport(elevel,
 			(errmsg("index \"%s\" now contains %.0f row versions in %u pages",
@@ -3619,7 +3619,7 @@ vacuum_index(VacPageList vacpagelist, Relation indrel,
 	if (!stats->estimated_count)
 		vac_update_relstats(indrel,
 							stats->num_pages, stats->num_index_tuples,
-							false, InvalidTransactionId);
+							false, InvalidTransactionId, false);
 
 	ereport(elevel,
 			(errmsg("index \"%s\" now contains %.0f row versions in %u pages",
