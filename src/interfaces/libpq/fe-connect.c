@@ -443,7 +443,7 @@ connectOptions1(PGconn *conn, const char *conninfo)
 			free(conn->sslmode);
 		conn->sslmode = strdup("require");
 		if (!conn->sslmode)
-			return false;
+			goto oom_error;
 	}
 #endif
 #if defined(KRB5) || defined(ENABLE_GSS) || defined(ENABLE_SSPI)
