@@ -6036,7 +6036,7 @@ myEventProc(PGEventId evtId, void *evtInfo, void *passThrough)
   <para>
    To use this feature, copy
    <filename>share/pg_service.conf.sample</filename> to
-   <filename>etc/pg_service.conf</filename> and edit the file to add
+   <filename>/etc/pg_service.conf</filename> and edit the file to add
    service names and parameters. This file can be used for client-only
    installs too. The file's location can also be specified by the
    <envar>PGSYSCONFDIR</envar> environment variable.
