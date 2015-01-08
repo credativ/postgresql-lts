@@ -17278,7 +17278,7 @@ LIBS=`echo "$LIBS" | sed -e 's/-ledit//g' -e 's/-lreadline//g'`
 
 
 
-for ac_func in cbrt dlopen fcvt fdatasync getpeereid getpeerucred getrlimit memmove poll pstat readlink setproctitle setsid sigprocmask symlink sysconf towlower utime utimes waitpid wcstombs
+for ac_func in cbrt dlopen fcvt fdatasync getpeereid getpeerucred getrlimit memmove poll pstat pthread_is_threaded_np readlink setproctitle setsid sigprocmask symlink sysconf towlower utime utimes waitpid wcstombs
 do
 as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
 { echo "$as_me:$LINENO: checking for $ac_func" >&5
