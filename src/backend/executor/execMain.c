@@ -2693,6 +2693,14 @@ EvalPlanQualStart(evalPlanQual *epq, EState *estate, evalPlanQual *priorepq)
 	 * the snapshot, rangetable, result-rel info, and external Param info.
 	 * They need their own copies of local state, including a tuple table,
 	 * es_param_exec_vals, etc.
+	 *
+	 * The ResultRelInfo array management is trickier than it looks.  We
+	 * create a fresh array for the child but copy all the content from the
+	 * parent.  This is because it's okay for the child to share any
+	 * per-relation state the parent has already created --- but if the child
+	 * sets up any ResultRelInfo fields, such as its own junkfilter, that
+	 * state must *not* propagate back to the parent.  (For one thing, the
+	 * pointed-to data is in a memory context that won't last long enough.)
 	 */
 	epqstate->es_direction = ForwardScanDirection;
 	epqstate->es_snapshot = estate->es_snapshot;
@@ -2700,9 +2708,20 @@ EvalPlanQualStart(evalPlanQual *epq, EState *estate, evalPlanQual *priorepq)
 	epqstate->es_range_table = estate->es_range_table;
 	epqstate->es_output_cid = estate->es_output_cid;
 	epqstate->es_result_relations = estate->es_result_relations;
-	epqstate->es_num_result_relations = estate->es_num_result_relations;
-	epqstate->es_result_relation_info = estate->es_result_relation_info;
 	epqstate->es_junkFilter = estate->es_junkFilter;
+	if (estate->es_num_result_relations > 0)
+	{
+		int			 numResultRelations = estate->es_num_result_relations;
+		ResultRelInfo *resultRelInfos;
+
+		resultRelInfos = (ResultRelInfo *)
+			palloc(numResultRelations * sizeof(ResultRelInfo));
+		memcpy(resultRelInfos, estate->es_result_relations,
+			   numResultRelations * sizeof(ResultRelInfo));
+		epqstate->es_result_relations = resultRelInfos;
+		epqstate->es_num_result_relations = numResultRelations;
+	}
+	/* es_result_relation_info must NOT be copied */
 	/* es_trig_target_relations must NOT be copied */
 	epqstate->es_param_list_info = estate->es_param_list_info;
 	if (estate->es_plannedstmt->nParamExec > 0)
