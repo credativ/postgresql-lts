@@ -1778,6 +1778,8 @@ GetLockConflicts(const LOCKTAG *locktag, LOCKMODE lockmode)
 		 * on this lockable object.
 		 */
 		LWLockRelease(partitionLock);
+		vxids[count].backendId = InvalidBackendId;
+		vxids[count].localTransactionId = InvalidLocalTransactionId;
 		return vxids;
 	}
 
@@ -1823,6 +1825,8 @@ GetLockConflicts(const LOCKTAG *locktag, LOCKMODE lockmode)
 	if (count > MaxBackends)	/* should never happen */
 		elog(PANIC, "too many conflicting locks found");
 
+	vxids[count].backendId = InvalidBackendId;
+	vxids[count].localTransactionId = InvalidLocalTransactionId;
 	return vxids;
 }
 
