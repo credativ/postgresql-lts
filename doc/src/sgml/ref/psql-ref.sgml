@@ -2028,7 +2028,7 @@ lo_import 152801
 
 
       <varlistentry>
-        term><literal>\w</literal> or <literal>\write</literal> <replaceable class="parameter">filename</replaceable></term>
+        <term><literal>\w</literal> or <literal>\write</literal> <replaceable class="parameter">filename</replaceable></term>
 	<term><literal>\w</literal> or <literal>\write</literal> <literal>|</><replaceable class="parameter">command</replaceable></term>
         <listitem>
         <para>
