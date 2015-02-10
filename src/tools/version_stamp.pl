@@ -43,7 +43,7 @@ if ($minor =~ m/^\d+$/) {
     $numericminor = 0;
 } elsif ($minor =~ m/^(\d+)lts(\d+)$/) {
     $dotneeded = 1;
-    $numericminor = $1+$2;
+    $numericminor = $1;
 } else {
     die "$0: minor-version must be N, devel, betaN, or rcN\n";
 }
