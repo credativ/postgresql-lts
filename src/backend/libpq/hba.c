@@ -1191,27 +1191,6 @@ check_hba(hbaPort *port)
 				if (!pg_range_sockaddr(&port->raddr.addr, &hba->addr, &hba->mask))
 					continue;
 			}
-#ifdef HAVE_IPV6
-			else if (hba->addr.ss_family == AF_INET &&
-					 port->raddr.addr.ss_family == AF_INET6)
-			{
-				/*
-				 * Wrong address family.  We allow only one case: if the file
-				 * has IPv4 and the port is IPv6, promote the file address to
-				 * IPv6 and try to match that way.
-				 */
-				struct sockaddr_storage addrcopy,
-							maskcopy;
-
-				memcpy(&addrcopy, &hba->addr, sizeof(addrcopy));
-				memcpy(&maskcopy, &hba->mask, sizeof(maskcopy));
-				pg_promote_v4_to_v6_addr(&addrcopy);
-				pg_promote_v4_to_v6_mask(&maskcopy);
-
-				if (!pg_range_sockaddr(&port->raddr.addr, &addrcopy, &maskcopy))
-					continue;
-			}
-#endif   /* HAVE_IPV6 */
 			else
 				/* Wrong address family, no IPV6 */
 				continue;
