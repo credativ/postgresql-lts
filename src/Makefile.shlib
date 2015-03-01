@@ -351,6 +351,7 @@ all-shared-lib: $(shlib)
 
 ifndef haslibarule
 $(stlib): $(OBJS)
+	rm -f $@
 	$(LINK.static) $@ $^
 	$(RANLIB) $@
 endif #haslibarule
@@ -393,6 +394,7 @@ else # PORTNAME == aix
 
 # AIX case
 $(shlib) $(stlib): $(OBJS)
+	rm -f $(stlib)
 	$(LINK.static) $(stlib) $^
 	$(RANLIB) $(stlib)
 	$(MKLDEXPORT) $(stlib) >$(exports_file)
