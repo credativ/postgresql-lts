@@ -668,3 +668,23 @@ left join
    using (join_key)
   ) foo3
 using (join_key);
+
+--
+-- test that quals attached to an outer join have correct semantics,
+-- specifically that they don't re-use expressions computed below the join;
+-- we force a mergejoin so that coalesce(b.q1, 1) appears as a join input
+--
+
+set enable_hashjoin to off;
+set enable_nestloop to off;
+
+explain
+  select a.q2, b.q1
+    from int8_tbl a left join int8_tbl b on a.q2 = coalesce(b.q1, 1)
+    where coalesce(b.q1, 1) > 0;
+select a.q2, b.q1
+  from int8_tbl a left join int8_tbl b on a.q2 = coalesce(b.q1, 1)
+  where coalesce(b.q1, 1) > 0;
+
+reset enable_hashjoin;
+reset enable_nestloop;
