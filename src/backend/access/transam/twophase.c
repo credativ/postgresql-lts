@@ -1799,6 +1799,12 @@ RecoverPreparedTransactions(void)
 			 */
 			ProcessRecords(bufptr, xid, twophase_recover_callbacks);
 
+			/*
+			 * We're done with recovering this transaction. Clear MyLockedGxact,
+			 * like we do in PrepareTransaction() during normal operation.
+			 */
+			PostPrepare_Twophase();
+
 			pfree(buf);
 		}
 	}
