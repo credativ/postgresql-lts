@@ -433,7 +433,7 @@ WHERE d.f1 IS NULL;
 
 create temp table tt4x(c1 int, c2 int, c3 int);
 
-explain (costs off)
+explain
 select * from tt4x t1
 where not exists (
   select 1 from tt4x t2

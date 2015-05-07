@@ -2255,7 +2255,7 @@ WHERE d.f1 IS NULL;
 -- regression test for proper handling of outer joins within antijoins
 --
 create temp table tt4x(c1 int, c2 int, c3 int);
-explain (costs off)
+explain
 select * from tt4x t1
 where not exists (
   select 1 from tt4x t2
@@ -2265,32 +2265,32 @@ where not exists (
               ) a1 on t3.c2 = a1.c1
   where t1.c1 = t2.c2
 );
-                       QUERY PLAN                        
----------------------------------------------------------
- Hash Anti Join
+                                          QUERY PLAN                                           
+-----------------------------------------------------------------------------------------------
+ Hash Anti Join  (cost=58116.58..65122.14 rows=970 width=12)
    Hash Cond: (t1.c1 = t2.c2)
-   ->  Seq Scan on tt4x t1
-   ->  Hash
-         ->  Merge Right Join
+   ->  Seq Scan on tt4x t1  (cost=0.00..29.40 rows=1940 width=12)
+   ->  Hash  (cost=29067.20..29067.20 rows=1770590 width=4)
+         ->  Merge Right Join  (cost=2169.40..29067.20 rows=1770590 width=4)
                Merge Cond: (t5.c1 = t3.c2)
-               ->  Merge Join
+               ->  Merge Join  (cost=270.68..562.65 rows=18818 width=4)
                      Merge Cond: (t4.c2 = t5.c1)
-                     ->  Sort
+                     ->  Sort  (cost=135.34..140.19 rows=1940 width=4)
                            Sort Key: t4.c2
-                           ->  Seq Scan on tt4x t4
-                     ->  Sort
+                           ->  Seq Scan on tt4x t4  (cost=0.00..29.40 rows=1940 width=4)
+                     ->  Sort  (cost=135.34..140.19 rows=1940 width=4)
                            Sort Key: t5.c1
-                           ->  Seq Scan on tt4x t5
-               ->  Sort
+                           ->  Seq Scan on tt4x t5  (cost=0.00..29.40 rows=1940 width=4)
+               ->  Sort  (cost=1898.72..1945.76 rows=18818 width=8)
                      Sort Key: t3.c2
-                     ->  Merge Left Join
+                     ->  Merge Left Join  (cost=270.68..562.65 rows=18818 width=8)
                            Merge Cond: (t2.c3 = t3.c1)
-                           ->  Sort
+                           ->  Sort  (cost=135.34..140.19 rows=1940 width=8)
                                  Sort Key: t2.c3
-                                 ->  Seq Scan on tt4x t2
-                           ->  Sort
+                                 ->  Seq Scan on tt4x t2  (cost=0.00..29.40 rows=1940 width=8)
+                           ->  Sort  (cost=135.34..140.19 rows=1940 width=8)
                                  Sort Key: t3.c1
-                                 ->  Seq Scan on tt4x t3
+                                 ->  Seq Scan on tt4x t3  (cost=0.00..29.40 rows=1940 width=8)
 (24 rows)
 
 --
