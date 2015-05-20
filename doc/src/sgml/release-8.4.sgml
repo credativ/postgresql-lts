@@ -155,18 +155,6 @@
 
     <listitem>
      <para>
-      Cope with unexpected signals in <function>LockBufferForCleanup()</>
-      (Andres Freund)
-     </para>
-
-     <para>
-      This oversight could result in spurious errors about <quote>multiple
-      backends attempting to wait for pincount 1</>.
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
       Fix possible failure during hash index bucket split, if other processes
       are modifying the index concurrently (Tom Lane)
      </para>
@@ -257,7 +245,7 @@
     <listitem>
      <para>
       Run <application>pg_resetxlog</> with restricted privileges on Windows,
-      so that they don't fail when run by an administrator </>
+      so that they don't fail when run by an administrator
       (Muhammad Asif Naeem)
      </para>
     </listitem>
