@@ -1,6 +1,293 @@
 <!-- doc/src/sgml/release-8.4.sgml -->
 <!-- See header comment in release.sgml about typical markup -->
 
+ <sect1 id="release-8-4-22lts2">
+  <title>Release 8.4.22lts2</title>
+
+  <note>
+  <title>Release Date</title>
+  <simpara>2015-05-22</simpara>
+  </note>
+
+  <para>
+   This release contains a variety of fixes from 8.4.22lts1.
+   For information about new features in the 8.4 major release, see
+   <xref linkend="release-8-4">.
+  </para>
+
+  <sect2>
+   <title>Migration to Version 8.4.22lts2</title>
+
+   <para>
+    A dump/restore is not required for those running 8.4.X.
+   </para>
+
+   <para>
+    However, if you are upgrading from a version earlier than 8.4.22,
+    see <xref linkend="release-8-4-22">.
+   </para>
+
+  </sect2>
+
+  <sect2>
+   <title>Changes</title>
+
+   <itemizedlist>
+
+    <listitem>
+     <para>
+      Avoid possible crash when client disconnects just before the
+      authentication timeout expires (Benkocs Norbert Attila)
+     </para>
+
+     <para>
+      If the timeout interrupt fired partway through the session shutdown
+      sequence, SSL-related state would be freed twice, typically causing a
+      crash and hence denial of service to other sessions.  Experimentation
+      shows that an unauthenticated remote attacker could trigger the bug
+      somewhat consistently, hence treat as security issue.
+      (CVE-2015-3165)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Improve detection of system-call failures (Noah Misch)
+     </para>
+
+     <para>
+      Our replacement implementation of <function>snprintf()</> failed to
+      check for errors reported by the underlying system library calls;
+      the main case that might be missed is out-of-memory situations.
+      In the worst case this might lead to information exposure, due to our
+      code assuming that a buffer had been overwritten when it hadn't been.
+      Also, there were a few places in which security-relevant calls of other
+      system library functions did not check for failure.
+     </para>
+
+     <para>
+      It remains possible that some calls of the <function>*printf()</>
+      family of functions are vulnerable to information disclosure if an
+      out-of-memory error occurs at just the wrong time.  We judge the risk
+      to not be large, but will continue analysis in this area.
+      (CVE-2015-3166)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      In <filename>contrib/pgcrypto</>, uniformly report decryption failures
+      as <quote>Wrong key or corrupt data</> (Noah Misch)
+     </para>
+
+     <para>
+      Previously, some cases of decryption with an incorrect key could report
+      other error message texts.  It has been shown that such variance in
+      error reports can aid attackers in recovering keys from other systems.
+      While it's unknown whether <filename>pgcrypto</>'s specific behaviors
+      are likewise exploitable, it seems better to avoid the risk by using a
+      one-size-fits-all message.
+      (CVE-2015-3167)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Prevent improper reordering of antijoins (NOT EXISTS joins) versus
+      other outer joins (Tom Lane)
+     </para>
+
+     <para>
+      This oversight in the planner has been observed to cause <quote>could
+      not find RelOptInfo for given relids</> errors, but it seems possible
+      that sometimes an incorrect query plan might get past that consistency
+      check and result in silently-wrong query output.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Fix incorrect matching of subexpressions in outer-join plan nodes
+      (Tom Lane)
+     </para>
+
+     <para>
+      Previously, if textually identical non-strict subexpressions were used
+      both above and below an outer join, the planner might try to re-use
+      the value computed below the join, which would be incorrect because the
+      executor would force the value to NULL in case of an unmatched outer row.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Fix possible deadlock at startup
+      when <literal>max_prepared_transactions</> is too small
+      (Heikki Linnakangas)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Don't archive useless preallocated WAL files after a timeline switch
+      (Heikki Linnakangas)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Fix autovacuum launcher's possible failure to shut down, if an error
+      occurs after it receives SIGTERM (&Aacute;lvaro Herrera)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Cope with unexpected signals in <function>LockBufferForCleanup()</>
+      (Andres Freund)
+     </para>
+
+     <para>
+      This oversight could result in spurious errors about <quote>multiple
+      backends attempting to wait for pincount 1</>.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Cope with unexpected signals in <function>LockBufferForCleanup()</>
+      (Andres Freund)
+     </para>
+
+     <para>
+      This oversight could result in spurious errors about <quote>multiple
+      backends attempting to wait for pincount 1</>.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Fix possible failure during hash index bucket split, if other processes
+      are modifying the index concurrently (Tom Lane)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Check for interrupts while analyzing index expressions (Jeff Janes)
+     </para>
+
+     <para>
+      <command>ANALYZE</> executes index expressions many times; if there are
+      slow functions in such an expression, it's desirable to be able to
+      cancel the <command>ANALYZE</> before that loop finishes.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Add the name of the target server to object description strings for
+      foreign-server user mappings (&Aacute;lvaro Herrera)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Remove code for matching IPv4 <filename>pg_hba.conf</> entries to
+      IPv4-in-IPv6 addresses (Tom Lane)
+     </para>
+
+     <para>
+      This hack was added in 2003 in response to a report that some Linux
+      kernels of the time would report IPv4 connections as having
+      IPv4-in-IPv6 addresses.  However, the logic was accidentally broken in
+      9.0.  The lack of any field complaints since then shows that it's not
+      needed anymore.  Now we have reports that the broken code causes
+      crashes on some systems, so let's just remove it rather than fix it.
+      (Had we chosen to fix it, that would make for a subtle and potentially
+      security-sensitive change in the effective meaning of
+      IPv4 <filename>pg_hba.conf</> entries, which does not seem like a good
+      thing to do in minor releases.)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      While shutting down service on Windows, periodically send status
+      updates to the Service Control Manager to prevent it from killing the
+      service too soon; and ensure that <application>pg_ctl</> will wait for
+      shutdown (Krystian Bigaj)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Reduce risk of network deadlock when using <application>libpq</>'s
+      non-blocking mode (Heikki Linnakangas)
+     </para>
+
+     <para>
+      When sending large volumes of data, it's important to drain the input
+      buffer every so often, in case the server has sent enough response data
+      to cause it to block on output.  (A typical scenario is that the server
+      is sending a stream of NOTICE messages during <literal>COPY FROM
+      STDIN</>.)  This worked properly in the normal blocking mode, but not
+      so much in non-blocking mode.  We've modified <application>libpq</>
+      to opportunistically drain input when it can, but a full defense
+      against this problem requires application cooperation: the application
+      should watch for socket read-ready as well as write-ready conditions,
+      and be sure to call <function>PQconsumeInput()</> upon read-ready.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Fix <application>pg_dump</>'s rule for deciding which casts are
+      system-provided casts that should not be dumped (Tom Lane)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Fix dumping of views that are just <literal>VALUES(...)</> but have
+      column aliases (Tom Lane)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Run <application>pg_resetxlog</> with restricted privileges on Windows,
+      so that they don't fail when run by an administrator </>
+      (Muhammad Asif Naeem)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Fix slow sorting algorithm in <filename>contrib/intarray</> (Tom Lane)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Fix compile failure on Sparc V8 machines (Rob Rowan)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Update time zone data files to <application>tzdata</> release 2015d
+      for DST law changes in Egypt, Mongolia, and Palestine, plus historical
+      changes in Canada and Chile.  Also adopt revised zone abbreviations for
+      the America/Adak zone (HST/HDT not HAST/HADT).
+     </para>
+    </listitem>
+
+   </itemizedlist>
+
+  </sect2>
+ </sect1>
+
  <sect1 id="release-8-4-22lts1">
   <title>Release 8.4.22lts1</title>
 
