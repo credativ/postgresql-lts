@@ -53,7 +53,7 @@ typedef enum
 	LOCAL_OBJECT,
 	SHARED_OBJECT,
 	REMOTE_OBJECT
-} objectType;
+} SharedDependencyObjectType;
 
 static int getOidListDiff(Oid *list1, int nlist1, Oid *list2, int nlist2,
 			   Oid **diff);
@@ -72,7 +72,8 @@ static void shdepDropDependency(Relation sdepRel,
 					bool drop_subobjects,
 					Oid refclassId, Oid refobjId,
 					SharedDependencyType deptype);
-static void storeObjectDescription(StringInfo descs, objectType type,
+static void storeObjectDescription(StringInfo descs,
+					   SharedDependencyObjectType type,
 					   ObjectAddress *object,
 					   SharedDependencyType deptype,
 					   int count);
@@ -1027,7 +1028,8 @@ shdepLockAndCheckObject(Oid classId, Oid objectId)
  * and count to be nonzero; deptype is not used in this case.
  */
 static void
-storeObjectDescription(StringInfo descs, objectType type,
+storeObjectDescription(StringInfo descs,
+					   SharedDependencyObjectType type,
 					   ObjectAddress *object,
 					   SharedDependencyType deptype,
 					   int count)
