@@ -10,9 +10,9 @@
   </note>
 
   <para>
-   This release contains a variety of fixes from 8.4.22lts1.
-   For information about new features in the 8.4 major release, see
-   <xref linkend="release-8-4">.
+   This release contains a variety of fixes from 8.4.22lts1, adopted from the
+   9.0.20 release.  For information about new features in the 8.4 major
+   release, see <xref linkend="release-8-4">.
   </para>
 
   <sect2>
@@ -285,9 +285,9 @@
   </note>
 
   <para>
-   This release contains a variety of fixes from 8.4.22.
-   For information about new features in the 8.4 major release, see
-   <xref linkend="release-8-4">.
+   This release contains a variety of fixes from 8.4.22, adopted from the
+   9.0.19 release.  For information about new features in the 8.4 major
+   release, see <xref linkend="release-8-4">.
   </para>
 
   <sect2>
