@@ -15,6 +15,13 @@
    release, see <xref linkend="release-8-4">.
   </para>
 
+  <para>
+   The <productname>PostgreSQL</> community has stopped releasing updates
+   for the 8.4.X release series in July 2014.
+   This update is a Long-Term-Support (LTS) community effort by credativ GmbH
+   and not an official release by the <productname>PostgreSQL</> community.
+  </para>
+
   <sect2>
    <title>Migration to Version 8.4.22lts2</title>
 
@@ -288,6 +295,13 @@
    This release contains a variety of fixes from 8.4.22, adopted from the
    9.0.19 release.  For information about new features in the 8.4 major
    release, see <xref linkend="release-8-4">.
+  </para>
+
+  <para>
+   The <productname>PostgreSQL</> community has stopped releasing updates
+   for the 8.4.X release series in July 2014.
+   This update is a Long-Term-Support (LTS) community effort by credativ GmbH
+   and not an official release by the <productname>PostgreSQL</> community.
   </para>
 
   <sect2>
