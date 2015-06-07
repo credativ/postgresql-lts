@@ -111,6 +111,8 @@ extern Datum SysCacheGetAttr(int cacheId, HeapTuple tup,
 extern struct catclist *SearchSysCacheList(int cacheId, int nkeys,
 				   Datum key1, Datum key2, Datum key3, Datum key4);
 
+extern bool RelationSupportsSysCache(Oid relid);
+
 #define ReleaseSysCacheList(x)	ReleaseCatCacheList(x)
 
 #endif   /* SYSCACHE_H */

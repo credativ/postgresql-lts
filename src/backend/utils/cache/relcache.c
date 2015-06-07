@@ -115,12 +115,6 @@ bool		criticalRelcachesBuilt = false;
 static long relcacheInvalsReceived = 0L;
 
 /*
- * This list remembers the OIDs of the relations cached in the relcache
- * init file.
- */
-static List *initFileRelationIds = NIL;
-
-/*
  * This flag lets us optimize away work in AtEO(Sub)Xact_RelationCache().
  */
 static bool need_eoxact_work = false;
@@ -3537,7 +3531,6 @@ load_relcache_init_file(void)
 	rels = (Relation *) palloc(max_rels * sizeof(Relation));
 	num_rels = 0;
 	nailed_rels = nailed_indexes = 0;
-	initFileRelationIds = NIL;
 
 	/* check for correct magic number (compatible version) */
 	if (fread(&magic, 1, sizeof(magic), fp) != sizeof(magic))
@@ -3817,9 +3810,6 @@ load_relcache_init_file(void)
 	for (relno = 0; relno < num_rels; relno++)
 	{
 		RelationCacheInsert(rels[relno]);
-		/* also make a list of their OIDs, for RelationIdIsInInitFile */
-		initFileRelationIds = lcons_oid(RelationGetRelid(rels[relno]),
-										initFileRelationIds);
 	}
 
 	pfree(rels);
@@ -3853,8 +3843,14 @@ write_relcache_init_file(void)
 	int			magic;
 	HASH_SEQ_STATUS status;
 	RelIdCacheEnt *idhentry;
-	MemoryContext oldcxt;
 	int			i;
+
+	/*
+	 * If we have already received any relcache inval events, there's no
+	 * chance of succeeding so we may as well skip the whole thing.
+	 */
+	if (relcacheInvalsReceived != 0L)
+		return;
 
 	/*
 	 * We must write a temporary file and rename it into place. Otherwise,
@@ -3896,12 +3892,18 @@ write_relcache_init_file(void)
 	 */
 	hash_seq_init(&status, RelationIdCache);
 
-	initFileRelationIds = NIL;
-
 	while ((idhentry = (RelIdCacheEnt *) hash_seq_search(&status)) != NULL)
 	{
 		Relation	rel = idhentry->reldesc;
 		Form_pg_class relform = rel->rd_rel;
+
+		/*
+		 * Ignore if not supposed to be in init file. (Note: if you
+		 * want to change the criterion for rels to be kept in the init
+		 * file, see also inval.c.)
+		 */
+		if (!RelationSupportsSysCache(RelationGetRelid(rel)))
+			continue;
 
 		/* first write the relcache entry proper */
 		write_item(rel, sizeof(RelationData), fp);
@@ -3959,12 +3961,6 @@ write_relcache_init_file(void)
 					   relform->relnatts * sizeof(int16),
 					   fp);
 		}
-
-		/* also make a list of their OIDs, for RelationIdIsInInitFile */
-		oldcxt = MemoryContextSwitchTo(CacheMemoryContext);
-		initFileRelationIds = lcons_oid(RelationGetRelid(rel),
-										initFileRelationIds);
-		MemoryContextSwitchTo(oldcxt);
 	}
 
 	if (FreeFile(fp))
@@ -4021,21 +4017,6 @@ write_item(const void *data, Size len, FILE *fp)
 		elog(FATAL, "could not write init file");
 	if (fwrite(data, 1, len, fp) != len)
 		elog(FATAL, "could not write init file");
-}
-
-/*
- * Detect whether a given relation (identified by OID) is one of the ones
- * we store in the init file.
- *
- * Note that we effectively assume that all backends running in a database
- * would choose to store the same set of relations in the init file;
- * otherwise there are cases where we'd fail to detect the need for an init
- * file invalidation.  This does not seem likely to be a problem in practice.
- */
-bool
-RelationIdIsInInitFile(Oid relationId)
-{
-	return list_member_oid(initFileRelationIds, relationId);
 }
 
 /*
