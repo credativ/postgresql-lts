@@ -773,6 +773,7 @@ DOCBOOKSTYLE
 COLLATEINDEX
 SGMLSPL
 DOCBOOK2MAN
+PG_VERSION_NUM
 vpath_build
 LTLIBOBJS'
 ac_subst_files=''
@@ -27683,6 +27684,7 @@ $AWK '{printf "%d%02d%02d", $1, $2, (NF >= 3) ? $3 : 0}'`"
 cat >>confdefs.h <<_ACEOF
 #define PG_VERSION_NUM $PG_VERSION_NUM
 _ACEOF
+
 
 
 
