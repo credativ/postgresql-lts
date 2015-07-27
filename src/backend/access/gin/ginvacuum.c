@@ -766,7 +766,7 @@ ginvacuumcleanup(PG_FUNCTION_ARGS)
 		LockBuffer(buffer, GIN_SHARE);
 		page = (Page) BufferGetPage(buffer);
 
-		if (GinPageIsDeleted(page))
+		if (PageIsNew(page) || GinPageIsDeleted(page))
 		{
 			RecordFreeIndexPage(index, blkno);
 			totFreePages++;
