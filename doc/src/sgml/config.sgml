@@ -596,12 +596,13 @@ SET ENABLE_SEQSCAN TO OFF;
       </indexterm>
       <listitem>
        <para>
-        Specifies how much data can flow over an <acronym>SSL</> encrypted connection
-        before renegotiation of the session will take place. Renegotiation of the
-        session decreases the chance of doing cryptanalysis when large amounts of data
-        are sent, but it also carries a large performance penalty. The sum of
-        sent and received traffic is used to check the limit. If the parameter is
-        set to 0, renegotiation is disabled. The default is <literal>512MB</>.
+        Specifies how much data can flow over an <acronym>SSL</>-encrypted
+        connection before renegotiation of the session keys will take
+        place. Renegotiation decreases an attacker's chances of doing
+        cryptanalysis when large amounts of traffic can be examined, but it
+        also carries a large performance penalty. The sum of sent and received
+        traffic is used to check the limit. If this parameter is set to 0,
+        renegotiation is disabled. The default is <literal>0</>.
        </para>
        <note>
         <para>
@@ -612,6 +613,14 @@ SET ENABLE_SEQSCAN TO OFF;
          or server, SSL renegotiation should be disabled.
         </para>
        </note>
+
+       <warning>
+        <para>
+         Due to bugs in <productname>OpenSSL</> enabling ssl renegotiation, by
+         configuring a non-zero <varname>ssl_renegotiation_limit</>, is likely
+         to lead to problems like long-lived connections breaking.
+        </para>
+       </warning>
       </listitem>
      </varlistentry>
 
