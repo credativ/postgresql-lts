@@ -1940,10 +1940,12 @@ choose_hashed_grouping(PlannerInfo *root,
 	 *
 	 * Beware here of the possibility that cheapest_path->parent is NULL. This
 	 * could happen if user does something silly like SELECT 'foo' GROUP BY 1;
+	 * Also, if the final rel has been proven dummy, its rows estimate will be
+	 * zero; clamp it to one to avoid zero-divide in subsequent calculations.
 	 */
 	if (cheapest_path->parent)
 	{
-		cheapest_path_rows = cheapest_path->parent->rows;
+		cheapest_path_rows = clamp_row_est(cheapest_path->parent->rows);
 		cheapest_path_width = cheapest_path->parent->width;
 	}
 	else
