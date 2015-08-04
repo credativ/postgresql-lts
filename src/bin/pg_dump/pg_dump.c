@@ -129,6 +129,7 @@ static void dumpNamespace(Archive *fout, NamespaceInfo *nspinfo);
 static void dumpType(Archive *fout, TypeInfo *tinfo);
 static void dumpBaseType(Archive *fout, TypeInfo *tinfo);
 static void dumpEnumType(Archive *fout, TypeInfo *tinfo);
+static void dumpUndefinedType(Archive *fout, TypeInfo *tinfo);
 static void dumpDomain(Archive *fout, TypeInfo *tinfo);
 static void dumpCompositeType(Archive *fout, TypeInfo *tinfo);
 static void dumpShellType(Archive *fout, ShellTypeInfo *stinfo);
@@ -1048,11 +1049,6 @@ selectDumpableType(TypeInfo *tinfo)
 	/* dump only types in dumpable namespaces */
 	if (!tinfo->dobj.namespace->dobj.dump)
 		tinfo->dobj.dump = false;
-
-	/* skip undefined placeholder types */
-	else if (!tinfo->isDefined)
-		tinfo->dobj.dump = false;
-
 	else
 		tinfo->dobj.dump = true;
 }
@@ -2536,7 +2532,7 @@ getTypes(int *numTypes)
 			}
 		}
 
-		if (strlen(tinfo[i].rolname) == 0 && tinfo[i].isDefined)
+		if (strlen(tinfo[i].rolname) == 0)
 			write_msg(NULL, "WARNING: owner of data type \"%s\" appears to be invalid\n",
 					  tinfo[i].dobj.name);
 	}
@@ -6205,6 +6201,11 @@ dumpType(Archive *fout, TypeInfo *tinfo)
 		dumpCompositeType(fout, tinfo);
 	else if (tinfo->typtype == TYPTYPE_ENUM)
 		dumpEnumType(fout, tinfo);
+	else if (tinfo->typtype == TYPTYPE_PSEUDO && !tinfo->isDefined)
+		dumpUndefinedType(fout, tinfo);
+	else
+		write_msg(NULL, "WARNING: typtype of data type \"%s\" appears to be invalid\n",
+				  tinfo->dobj.name);
 }
 
 /*
@@ -6284,6 +6285,58 @@ dumpEnumType(Archive *fout, TypeInfo *tinfo)
 	destroyPQExpBuffer(q);
 	destroyPQExpBuffer(delq);
 	destroyPQExpBuffer(query);
+}
+
+/*
+ * dumpUndefinedType
+ *	  writes out to fout the queries to recreate a !typisdefined type
+ *
+ * This is a shell type, but we use different terminology to distinguish
+ * this case from where we have to emit a shell type definition to break
+ * circular dependencies.  An undefined type shouldn't ever have anything
+ * depending on it.
+ */
+static void
+dumpUndefinedType(Archive *fout, TypeInfo *tinfo)
+{
+	PQExpBuffer q = createPQExpBuffer();
+	PQExpBuffer delq = createPQExpBuffer();
+	PQExpBuffer labelq = createPQExpBuffer();
+	char	   *qtypname;
+
+	qtypname = pg_strdup(fmtId(tinfo->dobj.name));
+
+	/*
+	 * DROP must be fully qualified in case same name appears in pg_catalog.
+	 */
+	appendPQExpBuffer(delq, "DROP TYPE %s.",
+					  fmtId(tinfo->dobj.namespace->dobj.name));
+	appendPQExpBuffer(delq, "%s;\n",
+					  qtypname);
+
+	appendPQExpBuffer(q, "CREATE TYPE %s;\n",
+					  qtypname);
+
+	appendPQExpBuffer(labelq, "TYPE %s", qtypname);
+
+	ArchiveEntry(fout, tinfo->dobj.catId, tinfo->dobj.dumpId,
+				 tinfo->dobj.name,
+				 tinfo->dobj.namespace->dobj.name,
+				 NULL,
+				 tinfo->rolname, false,
+				 "TYPE", SECTION_PRE_DATA,
+				 q->data, delq->data, NULL,
+				 NULL, 0,
+				 NULL, NULL);
+
+	/* Dump Type Comments */
+	dumpComment(fout, labelq->data,
+				tinfo->dobj.namespace->dobj.name, tinfo->rolname,
+				tinfo->dobj.catId, 0, tinfo->dobj.dumpId);
+
+	destroyPQExpBuffer(q);
+	destroyPQExpBuffer(delq);
+	destroyPQExpBuffer(labelq);
 }
 
 /*
