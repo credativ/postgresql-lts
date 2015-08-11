@@ -2973,7 +2973,7 @@ getAggregates(int *numAggs)
 				  "CASE WHEN aggbasetype = 0 THEN 0 ELSE 1 END AS pronargs, "
 						  "aggbasetype AS proargtypes, "
 						  "(%s aggowner) AS rolname, "
-						  "'{=X}' AS aggacl "
+						  "NULL AS aggacl "
 						  "FROM pg_aggregate "
 						  "where oid > '%u'::oid",
 						  username_subquery,
@@ -2988,7 +2988,7 @@ getAggregates(int *numAggs)
 				  "CASE WHEN aggbasetype = 0 THEN 0 ELSE 1 END AS pronargs, "
 						  "aggbasetype AS proargtypes, "
 						  "(%s aggowner) AS rolname, "
-						  "'{=X}' AS aggacl "
+						  "NULL AS aggacl "
 						  "FROM pg_aggregate "
 						  "where oid > '%u'::oid",
 						  username_subquery,
@@ -3104,7 +3104,7 @@ getFuncs(int *numFuncs)
 		appendPQExpBuffer(query,
 						  "SELECT tableoid, oid, proname, prolang, "
 						  "pronargs, proargtypes, prorettype, "
-						  "'{=X}' AS proacl, "
+						  "NULL AS proacl, "
 						  "0::oid AS pronamespace, "
 						  "(%s proowner) AS rolname "
 						  "FROM pg_proc "
@@ -3120,7 +3120,7 @@ getFuncs(int *numFuncs)
 						  " WHERE relname = 'pg_proc') AS tableoid, "
 						  "oid, proname, prolang, "
 						  "pronargs, proargtypes, prorettype, "
-						  "'{=X}' AS proacl, "
+						  "NULL AS proacl, "
 						  "0::oid AS pronamespace, "
 						  "(%s proowner) AS rolname "
 						  "FROM pg_proc "
@@ -4551,7 +4551,6 @@ getProcLangs(int *numProcLangs)
 	i_lanname = PQfnumber(res, "lanname");
 	i_lanpltrusted = PQfnumber(res, "lanpltrusted");
 	i_lanplcallfoid = PQfnumber(res, "lanplcallfoid");
-	/* these may fail and return -1: */
 	i_lanvalidator = PQfnumber(res, "lanvalidator");
 	i_lanacl = PQfnumber(res, "lanacl");
 	i_lanowner = PQfnumber(res, "lanowner");
@@ -4566,18 +4565,9 @@ getProcLangs(int *numProcLangs)
 		planginfo[i].dobj.name = strdup(PQgetvalue(res, i, i_lanname));
 		planginfo[i].lanpltrusted = *(PQgetvalue(res, i, i_lanpltrusted)) == 't';
 		planginfo[i].lanplcallfoid = atooid(PQgetvalue(res, i, i_lanplcallfoid));
-		if (i_lanvalidator >= 0)
-			planginfo[i].lanvalidator = atooid(PQgetvalue(res, i, i_lanvalidator));
-		else
-			planginfo[i].lanvalidator = InvalidOid;
-		if (i_lanacl >= 0)
-			planginfo[i].lanacl = strdup(PQgetvalue(res, i, i_lanacl));
-		else
-			planginfo[i].lanacl = strdup("{=U}");
-		if (i_lanowner >= 0)
-			planginfo[i].lanowner = strdup(PQgetvalue(res, i, i_lanowner));
-		else
-			planginfo[i].lanowner = strdup("");
+		planginfo[i].lanvalidator = atooid(PQgetvalue(res, i, i_lanvalidator));
+		planginfo[i].lanacl = strdup(PQgetvalue(res, i, i_lanacl));
+		planginfo[i].lanowner = strdup(PQgetvalue(res, i, i_lanowner));
 
 		if (g_fout->remoteVersion < 70300)
 		{
