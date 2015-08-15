@@ -654,7 +654,8 @@ where <replaceable class="PARAMETER">action</replaceable> is one of:
 
    <para>
     Adding a <literal>CHECK</> or <literal>NOT NULL</> constraint requires
-    scanning the table to verify that existing rows meet the constraint.
+    scanning the table to verify that existing rows meet the constraint,
+    but does not require a table rewrite.
    </para>
 
    <para>
@@ -691,7 +692,14 @@ ALTER TABLE table ALTER COLUMN anycol TYPE anytype;
    </para>
 
    <para>
-    The <literal>USING</literal> option of <literal>ALTER TYPE</> can actually
+    The rewriting forms of <command>ALTER TABLE</> are not MVCC-safe.
+    After a table rewrite, the table will appear empty to concurrent
+    transactions, if they are using a snapshot taken before the rewrite
+    occurred.  See <xref linkend="mvcc-caveats"> for more details.
+   </para>
+
+   <para>
+    The <literal>USING</literal> option of <literal>SET DATA TYPE</> can actually
     specify any expression involving the old values of the row; that is, it
     can refer to other columns as well as the one being converted.  This allows
     very general conversions to be done with the <literal>ALTER TYPE</>
