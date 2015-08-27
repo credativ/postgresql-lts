@@ -63,7 +63,7 @@
 
    <variablelist>
     <varlistentry>
-     <term><parameter>conname</parameter></term>
+     <term><parameter>connname</parameter></term>
      <listitem>
       <para>
        The name to use for this connection; if omitted, an unnamed
@@ -262,7 +262,7 @@
 
    <variablelist>
     <varlistentry>
-     <term><parameter>conname</parameter></term>
+     <term><parameter>connname</parameter></term>
      <listitem>
       <para>
        The name of a named connection to be closed.
@@ -340,7 +340,7 @@
 
    <variablelist>
     <varlistentry>
-     <term><parameter>conname</parameter></term>
+     <term><parameter>connname</parameter></term>
      <listitem>
       <para>
        Name of the connection to use; omit this parameter to use the
@@ -562,7 +562,7 @@ SELECT *
 
    <variablelist>
     <varlistentry>
-     <term><parameter>conname</parameter></term>
+     <term><parameter>connname</parameter></term>
      <listitem>
       <para>
        Name of the connection to use; omit this parameter to use the
@@ -686,7 +686,7 @@ SELECT *
 
    <variablelist>
     <varlistentry>
-     <term><parameter>conname</parameter></term>
+     <term><parameter>connname</parameter></term>
      <listitem>
       <para>
        Name of the connection to use; omit this parameter to use the
@@ -804,7 +804,7 @@ SELECT *
 
    <variablelist>
     <varlistentry>
-     <term><parameter>conname</parameter></term>
+     <term><parameter>connname</parameter></term>
      <listitem>
       <para>
        Name of the connection to use; omit this parameter to use the
@@ -952,7 +952,7 @@ SELECT *
 
    <variablelist>
     <varlistentry>
-     <term><parameter>conname</parameter></term>
+     <term><parameter>connname</parameter></term>
      <listitem>
       <para>
        Name of the connection to use; omit this parameter to use the
@@ -1097,7 +1097,7 @@ SELECT *
 
    <variablelist>
     <varlistentry>
-     <term><parameter>conname</parameter></term>
+     <term><parameter>connname</parameter></term>
      <listitem>
       <para>
        Name of the connection to use.
@@ -1165,7 +1165,7 @@ SELECT *
 
    <variablelist>
     <varlistentry>
-     <term><parameter>conname</parameter></term>
+     <term><parameter>connname</parameter></term>
      <listitem>
       <para>
        Name of the connection to use.
@@ -1231,7 +1231,7 @@ SELECT *
 
    <variablelist>
     <varlistentry>
-     <term><parameter>conname</parameter></term>
+     <term><parameter>connname</parameter></term>
      <listitem>
       <para>
        Name of the connection to check.
@@ -1292,7 +1292,7 @@ SELECT *
 
    <variablelist>
     <varlistentry>
-     <term><parameter>conname</parameter></term>
+     <term><parameter>connname</parameter></term>
      <listitem>
       <para>
        Name of the connection to use.
@@ -1442,7 +1442,7 @@ SELECT *
 
    <variablelist>
     <varlistentry>
-     <term><parameter>conname</parameter></term>
+     <term><parameter>connname</parameter></term>
      <listitem>
       <para>
        Name of the connection to use.
