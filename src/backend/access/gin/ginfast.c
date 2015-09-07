@@ -751,8 +751,7 @@ ginInsertCleanup(Relation index, GinState *ginstate,
 		 */
 		processPendingPage(&accum, &datums, page, FirstOffsetNumber);
 
-		if (vac_delay)
-			vacuum_delay_point();
+		vacuum_delay_point();
 
 		/*
 		 * Is it time to flush memory to disk?	Flush if we are at the end of
@@ -789,8 +788,7 @@ ginInsertCleanup(Relation index, GinState *ginstate,
 			while ((list = ginGetEntry(&accum, &attnum, &entry, &nlist)) != NULL)
 			{
 				ginEntryInsert(index, ginstate, attnum, entry, list, nlist, FALSE);
-				if (vac_delay)
-					vacuum_delay_point();
+				vacuum_delay_point();
 			}
 
 			/*
@@ -868,7 +866,7 @@ ginInsertCleanup(Relation index, GinState *ginstate,
 		/*
 		 * Read next page in pending list
 		 */
-		CHECK_FOR_INTERRUPTS();
+		vacuum_delay_point();
 		buffer = ReadBuffer(index, blkno);
 		LockBuffer(buffer, GIN_SHARE);
 		page = BufferGetPage(buffer);
