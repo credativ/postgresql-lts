@@ -1858,7 +1858,7 @@ static struct config_int ConfigureNamesInt[] =
 			NULL
 		},
 		&autovacuum_freeze_max_age,
-		200000000, 100000000, 2000000000, NULL, NULL
+		200000000, 100000, 2000000000, NULL, NULL
 	},
 	{
 		/* see max_connections */
