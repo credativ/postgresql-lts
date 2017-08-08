@@ -44,6 +44,9 @@ if ($minor =~ m/^\d+$/) {
 } elsif ($minor =~ m/^rc\d+$/) {
     $dotneeded = 0;
     $numericminor = 0;
+} elsif ($minor =~ m/^(\d+)lts(\d+)$/) {
+    $dotneeded = 1;
+    $numericminor = $1;
 } else {
     die "$0: minor-version must be N, devel, alphaN, betaN, or rcN\n";
 }
