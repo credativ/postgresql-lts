@@ -1,6 +1,153 @@
 <!-- doc/src/sgml/release-9.1.sgml -->
 <!-- See header comment in release.sgml about typical markup -->
 
+ <sect1 id="release-9-1-24lts1">
+  <title>Release 9.1.24lts1</title>
+
+  <note>
+  <title>Release Date</title>
+  <simpara>2017-08-08</simpara>
+  </note>
+
+  <para>
+   This release contains a variety of fixes from 9.1.24, adopted from
+   the 9.2.21 release.  For information about new features in the 9.1 major
+   release, see <xref linkend="release-9-1">.
+  </para>
+
+  <para>
+   The <productname>PostgreSQL</> community has stopped releasing updates
+   for the 9.1.X release series in October 2016.
+   This update is a Long-Term-Support (LTS) community effort by credativ GmbH
+   and not an official release by the <productname>PostgreSQL</> community.
+  </para>
+
+  <sect2>
+   <title>Migration to Version 9.1.24lts1</title>
+
+   <para>
+    A dump/restore is not required for those running 9.1.X.
+   </para>
+
+   <para>
+    However, if you use foreign data servers that make use of user
+    passwords for authentication, see the first changelog entry below.
+   </para>
+
+   <para>
+    Also, if you are upgrading from a version earlier than 9.1.16,
+    see <xref linkend="release-9-1-16">.
+   </para>
+
+  </sect2>
+
+  <sect2>
+   <title>Changes</title>
+
+   <itemizedlist>
+
+    <listitem>
+     <para>
+      Restrict visibility
+      of <structname>pg_user_mappings</>.<structfield>umoptions</>, to
+      protect passwords stored as user mapping options
+      (Michael Paquier, Feike Steenbergen)
+     </para>
+
+     <para>
+      The previous coding allowed the owner of a foreign server object,
+      or anyone he has granted server <literal>USAGE</> permission to,
+      to see the options for all user mappings associated with that server.
+      This might well include passwords for other users.
+      Adjust the view definition to match the behavior of
+      <structname>information_schema.user_mapping_options</>, namely that
+      these options are visible to the user being mapped, or if the mapping
+      is for <literal>PUBLIC</literal> and the current user is the server
+      owner, or if the current user is a superuser.
+      (CVE-2017-7486)
+     </para>
+
+     <para>
+      By itself, this patch will only fix the behavior in newly initdb'd
+      databases.  If you wish to apply this change in an existing database,
+      you will need to do the following:
+     </para>
+
+     <procedure>
+      <step>
+       <para>
+        Restart the postmaster after adding <literal>allow_system_table_mods
+        = true</> to <filename>postgresql.conf</>.  (In versions
+        supporting <command>ALTER SYSTEM</>, you can use that to make the
+        configuration change, but you'll still need a restart.)
+       </para>
+      </step>
+
+      <step>
+       <para>
+        In <emphasis>each</> database of the cluster,
+        run the following commands as superuser:
+<programlisting>
+SET search_path = pg_catalog;
+CREATE OR REPLACE VIEW pg_user_mappings AS
+    SELECT
+        U.oid       AS umid,
+        S.oid       AS srvid,
+        S.srvname   AS srvname,
+        U.umuser    AS umuser,
+        CASE WHEN U.umuser = 0 THEN
+            'public'
+        ELSE
+            A.rolname
+        END AS usename,
+        CASE WHEN (U.umuser &lt;&gt; 0 AND A.rolname = current_user)
+                    OR (U.umuser = 0 AND pg_has_role(S.srvowner, 'USAGE'))
+                    OR (SELECT rolsuper FROM pg_authid WHERE rolname = current_user)
+                    THEN U.umoptions
+                 ELSE NULL END AS umoptions
+    FROM pg_user_mapping U
+         LEFT JOIN pg_authid A ON (A.oid = U.umuser) JOIN
+        pg_foreign_server S ON (U.umserver = S.oid);
+</programlisting>
+       </para>
+      </step>
+
+      <step>
+       <para>
+        Do not forget to include the <literal>template0</>
+        and <literal>template1</> databases, or the vulnerability will still
+        exist in databases you create later.  To fix <literal>template0</>,
+        you'll need to temporarily make it accept connections.
+        In <productname>PostgreSQL</> 9.5 and later, you can use
+<programlisting>
+ALTER DATABASE template0 WITH ALLOW_CONNECTIONS true;
+</programlisting>
+        and then after fixing <literal>template0</>, undo that with
+<programlisting>
+ALTER DATABASE template0 WITH ALLOW_CONNECTIONS false;
+</programlisting>
+        In prior versions, instead use
+<programlisting>
+UPDATE pg_database SET datallowconn = true WHERE datname = 'template0';
+UPDATE pg_database SET datallowconn = false WHERE datname = 'template0';
+</programlisting>
+       </para>
+      </step>
+
+      <step>
+       <para>
+        Finally, remove the <literal>allow_system_table_mods</> configuration
+        setting, and again restart the postmaster.
+       </para>
+      </step>
+     </procedure>
+    </listitem>
+
+   </itemizedlist>
+
+  </sect2>
+ </sect1>
+
  <sect1 id="release-9-1-24">
   <title>Release 9.1.24</title>
 
