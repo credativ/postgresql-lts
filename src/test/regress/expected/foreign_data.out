@@ -1072,43 +1072,43 @@ CREATE USER MAPPING FOR public SERVER s10 OPTIONS (user 'secret');
 CREATE USER MAPPING FOR unprivileged_role SERVER s10 OPTIONS (user 'secret');
 -- owner of server can see some option fields
 \deu+
-             List of user mappings
- Server |     User name     |    FDW Options    
---------+-------------------+-------------------
- s10    | public            | ("user" 'secret')
+           List of user mappings
+ Server |     User name     |    Options    
+--------+-------------------+---------------
+ s10    | public            | {user=secret}
  s10    | unprivileged_role | 
  s4     | foreign_data_user | 
- s5     | regress_test_role | (modified '1')
+ s5     | regress_test_role | {modified=1}
  s6     | regress_test_role | 
  s8     | foreign_data_user | 
  s8     | public            | 
  s9     | unprivileged_role | 
- t1     | public            | (modified '1')
+ t1     | public            | {modified=1}
 (9 rows)
 
 RESET ROLE;
 -- superuser can see all option fields
 \deu+
-              List of user mappings
- Server |     User name     |     FDW Options     
---------+-------------------+---------------------
- s10    | public            | ("user" 'secret')
- s10    | unprivileged_role | ("user" 'secret')
+             List of user mappings
+ Server |     User name     |      Options      
+--------+-------------------+-------------------
+ s10    | public            | {user=secret}
+ s10    | unprivileged_role | {user=secret}
  s4     | foreign_data_user | 
- s5     | regress_test_role | (modified '1')
+ s5     | regress_test_role | {modified=1}
  s6     | regress_test_role | 
- s8     | foreign_data_user | (password 'public')
+ s8     | foreign_data_user | {password=public}
  s8     | public            | 
  s9     | unprivileged_role | 
- t1     | public            | (modified '1')
+ t1     | public            | {modified=1}
 (9 rows)
 
 -- unprivileged user cannot see any option field
 SET ROLE unprivileged_role;
 \deu+
-          List of user mappings
- Server |     User name     | FDW Options 
---------+-------------------+-------------
+        List of user mappings
+ Server |     User name     | Options 
+--------+-------------------+---------
  s10    | public            | 
  s10    | unprivileged_role | 
  s4     | foreign_data_user | 
