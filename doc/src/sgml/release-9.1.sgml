@@ -23,7 +23,7 @@
   </para>
 
   <sect2>
-   <title>Migration to Version 9.1.24lts1</title>
+   <title>Migration to Version 9.1.24lts2</title>
 
    <para>
     A dump/restore is not required for those running 9.1.X.
